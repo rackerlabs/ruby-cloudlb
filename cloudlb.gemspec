@@ -2,7 +2,7 @@
 lib = File.expand_path('../lib/', __FILE__)
 $:.unshift lib unless $:.include?(lib)
 
-require 'lib/cloudlb/version'
+require File.expand_path('../lib/cloudlb/version', __FILE__)
  
 Gem::Specification.new do |s|
   s.name        = "cloudlb"
