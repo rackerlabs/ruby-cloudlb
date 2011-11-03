@@ -12,7 +12,6 @@ module CloudLB
         :method                        => :get,
         :headers                       => { "X-Auth-User" => connection.authuser, "X-Auth-Key" => connection.authkey },
         :user_agent                    => "Cloud Load Balancers Ruby API #{VERSION}",
-        :disable_ssl_peer_verification => true,
         :verbose                       => ENV['LOADBALANCERS_VERBOSE'] ? true : false)
       CloudLB.hydra.queue(request)
       CloudLB.hydra.run
@@ -21,14 +20,7 @@ module CloudLB
       if (response.code.to_s == "204")
         connection.authtoken = headers["x-auth-token"]
         user_id = headers["x-server-management-url"].match(/.*\/(\d+)$/)[1]
-        headers["x-server-management-url"] = case connection.region
-        when :ord
-          "https://ord.loadbalancers.api.rackspacecloud.com/v1.0/#{user_id}"
-        when :dfw
-          "https://dfw.loadbalancers.api.rackspacecloud.com/v1.0/#{user_id}"
-        else
-          raise
-        end
+        headers["x-server-management-url"] = "https://#{connection.region}.loadbalancers.api.rackspacecloud.com/v1.0/#{user_id}"
         connection.lbmgmthost = URI.parse(headers["x-server-management-url"]).host
         connection.lbmgmtpath = URI.parse(headers["x-server-management-url"]).path.chomp
         # Force the path into the v1.0 URL space
