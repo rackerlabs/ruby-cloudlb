@@ -153,20 +153,32 @@ module CloudLB
       update(body)
     end
     
-    # Checks to see whether or not the load balancer is using HTTP cookie session persistence.  Returns true if it is, false otherwise.
+    # Checks to see whether or not the load balancer is using HTTP_COOKIE or SOURCE_IP based session persistence.  Returns true if it is, false otherwise.
     def session_persistence?
       response = @connection.lbreq("GET",@lbmgmthost,"#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/sessionpersistence",@lbmgmtport,@lbmgmtscheme,{})
       CloudLB::Exception.raise_exception(response) unless response.code.to_s.match(/^20.$/)
-      JSON.parse(response.body)["sessionPersistence"]["persistenceType"] == "HTTP_COOKIE" ? true : false
+      ["HTTP_COOKIE","SOURCE_IP"].include(session_persistence)
+    end
+
+    # Returns the session persistence mode
+    def session_persistence
+      response = @connection.lbreq("GET",@lbmgmthost,"#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/sessionpersistence",@lbmgmtport,@lbmgmtscheme,{})
+      CloudLB::Exception.raise_exception(response) unless response.code.to_s.match(/^20.$/)
+      JSON.parse(response.body)["sessionPersistence"]["persistenceType"]
     end
     
-    # Allows toggling of HTTP cookie session persistence.  Valid values are true and false to enable or disable, respectively.
-    # FIXME - Trying to set the persistence to true is currently returning an undocumented 405 error.
+    # Shortcut for toggling the HTTP_COOKIE session persistence.  Valid values are true and false to enable or disable, respectively.
     def session_persistence=(value)
-      (raise CloudLB::Exception::MissingArgument, "value must be true or false") unless [true,false].include?(value)
+      set_session_persistence(value, "HTTP_COOKIE")
+    end
+
+    # Sets a value for session persistence.  @param value can be true/false which enables/disables session persistence.  @param persistence_type allows HTTP_COOKIE or SOURCE_IP.
+    def set_session_persistence(value, persistence_type="HTTP_COOKIE")
+      (raise CloudLB::Exception::InvalidArgument, "value must be true or false") unless [true,false].include?(value)
+      (raise CloudLB::Exception::InvalidArgument, "persistence_type must be HTTP_COOKIE or SOURCE_IP") unless ["SOURCE_IP","HTTP_COOKIE"].include?(persistence_type)
       if value == true
-        body = {'sessionPersistence' => {'persistenceType' => 'HTTP_COOKIE'}}
-        response = @connection.lbreq("POST", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/sessionpersistence",@lbmgmtport,@lbmgmtscheme,{},body.to_json)
+        body = {'sessionPersistence' => {'persistenceType' => persistence_type}}
+        response = @connection.lbreq("PUT", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/sessionpersistence",@lbmgmtport,@lbmgmtscheme,{},body.to_json)
       elsif value == false
         response = @connection.lbreq("DELETE", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/sessionpersistence",@lbmgmtport,@lbmgmtscheme)
       end
