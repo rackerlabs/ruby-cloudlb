@@ -103,6 +103,25 @@ module CloudLB
       JSON.parse(response.body)['nodes'].map { |node| get_node(node["id"]) }
     end
 
+    # Remove nodes from a load balancer. Returns true if successful, raises an exception otherwise.
+    #
+    def destroy_nodes(nodes)
+      ids = nodes.map do |node|
+        case node
+        when Node
+          node.id
+        when Hash
+          node[:id] || node['id']
+        else
+          node
+        end
+      end
+      ids_query = ids.map { |id| "id=#{id}" }.join('&')
+      response = @connection.lbreq("DELETE", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/nodes?#{ids_query}",@lbmgmtport,@lbmgmtscheme)
+      CloudLB::Exception.raise_exception(response) unless response.code.to_s.match(/^202$/)
+      true
+    end
+
     # Deletes the current load balancer object.  Returns true if successful, raises an exception otherwise.
     def destroy!
       response = @connection.lbreq("DELETE", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}",@lbmgmtport,@lbmgmtscheme)
