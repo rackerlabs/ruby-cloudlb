@@ -159,7 +159,6 @@ module CloudLB
                                       :body          => data,
                                       :method        => method.downcase.to_sym,
                                       :headers       => hdrhash,
-                                      :user_agent    => "Cloud Load Balancers Ruby API #{VERSION}",
                                       :verbose       => ENV['LOADBALANCERS_VERBOSE'] ? true : false)
       CloudLB.hydra.queue(request)
       CloudLB.hydra.run
@@ -192,6 +191,7 @@ module CloudLB
       default_headers["Connection"] = "Keep-Alive"
       default_headers["Accept"] = "application/json"
       default_headers["Content-Type"] = "application/json"
+      default_headers["User-Agent"] = "Cloud Load Balancers Ruby API #{VERSION}"
       default_headers.merge(headers)
     end    
         
