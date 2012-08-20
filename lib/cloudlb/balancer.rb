@@ -83,7 +83,45 @@ module CloudLB
       body = JSON.parse(response.body)['nodes'][0]
       return get_node(body["id"])
     end
-      
+
+    # Add multiple nodes to a load balancer. Returns the new Node objects.
+    #
+    # Use this if you're adding multiple nodes to a load balancer, as adding
+    # subsequent nodes while the first one is queued may fail.
+    #
+    # +nodes+ is an array of options given to #create_node.
+    #
+    def create_nodes(nodes)
+      nodes.each do |node|
+        (raise CloudLB::Exception::MissingArgument, "Must provide :address for all nodes") if node[:address].to_s.empty?
+        (raise CloudLB::Exception::MissingArgument, "Must provide :port for all nodes") if node[:port].to_s.empty?
+        node[:condition] ||= "ENABLED"
+      end
+      body = {:nodes => nodes}.to_json
+      response = @connection.lbreq("POST", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/nodes",@lbmgmtport,@lbmgmtscheme,{},body)
+      CloudLB::Exception.raise_exception(response) unless response.code.to_s.match(/^20.$/)
+      JSON.parse(response.body)['nodes'].map { |node| get_node(node["id"]) }
+    end
+
+    # Remove nodes from a load balancer. Returns true if successful, raises an exception otherwise.
+    #
+    def destroy_nodes(nodes)
+      ids = nodes.map do |node|
+        case node
+        when Node
+          node.id
+        when Hash
+          node[:id] || node['id']
+        else
+          node
+        end
+      end
+      ids_query = ids.map { |id| "id=#{id}" }.join('&')
+      response = @connection.lbreq("DELETE", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/nodes?#{ids_query}",@lbmgmtport,@lbmgmtscheme)
+      CloudLB::Exception.raise_exception(response) unless response.code.to_s.match(/^202$/)
+      true
+    end
+
     # Deletes the current load balancer object.  Returns true if successful, raises an exception otherwise.
     def destroy!
       response = @connection.lbreq("DELETE", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}",@lbmgmtport,@lbmgmtscheme)

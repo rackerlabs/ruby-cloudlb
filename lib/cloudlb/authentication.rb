@@ -10,8 +10,7 @@ module CloudLB
     def initialize(connection)
       request = Typhoeus::Request.new(connection.auth_url,
         :method                        => :get,
-        :headers                       => { "X-Auth-User" => connection.authuser, "X-Auth-Key" => connection.authkey },
-        :user_agent                    => "Cloud Load Balancers Ruby API #{VERSION}",
+        :headers                       => { "X-Auth-User" => connection.authuser, "X-Auth-Key" => connection.authkey, "User-Agent" => "Cloud Load Balancers Ruby API #{VERSION}" },
         :verbose                       => ENV['LOADBALANCERS_VERBOSE'] ? true : false)
       CloudLB.hydra.queue(request)
       CloudLB.hydra.run
