@@ -122,6 +122,25 @@ module CloudLB
       true
     end
 
+    # Create/updates the SSL termination configuration on the load balancer. Returns a new SSLTermination object.
+    #
+    # Options include:
+    #   * :certificate - The SSL certificate as a string *required*
+    #   * :privatekey - The SSL certificate's private key as a string *required*
+    #   * :securePort - The TCP port that the SSL termination listens on
+    #   * :secureTrafficOnly - Can be "false" (default) or "true"
+    def create_ssl_termination(options={})
+      (raise CloudLB::Exception::MissingArgument, "Must provide a private key used for SSL termination") if options[:privatekey].to_s.empty?
+      (raise CloudLB::Exception::MissingArgument, "Must provide a certificate used for SSL termination") if options[:certificate].to_s.empty?
+      options[:enabled] ||= "true"
+      options[:secureTrafficOnly] ||= "false"
+      options[:securePort] ||= 443
+      body = {:sslTermination => options}.to_json
+      response = @connection.lbreq("PUT", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}/ssltermination",@lbmgmtport,@lbmgmtscheme,{}, body)
+      CloudLB::Exception.raise_exception(response) unless response.code.to_s.match(/^20.$/)
+      return CloudLB::SSLTermination.new(self)
+    end
+
     # Deletes the current load balancer object.  Returns true if successful, raises an exception otherwise.
     def destroy!
       response = @connection.lbreq("DELETE", @lbmgmthost, "#{@lbmgmtpath}/loadbalancers/#{CloudLB.escape(@id.to_s)}",@lbmgmtport,@lbmgmtscheme)

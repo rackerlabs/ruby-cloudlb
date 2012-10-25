@@ -40,7 +40,8 @@ module CloudLB
   require 'cloudlb/node'
   require 'cloudlb/health_monitor'
   require 'cloudlb/connection_throttle'
-  
+  require 'cloudlb/ssl_termination'
+
   # Helper method to recursively symbolize hash keys.
   def self.symbolize_keys(obj)
     case obj
