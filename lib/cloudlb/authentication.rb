@@ -1,6 +1,6 @@
 module CloudLB
   class Authentication
-    
+
     # Performs an authentication to the Rackspace Cloud authorization servers.  Opens a new HTTP connection to the API server,
     # sends the credentials, and looks for a successful authentication.  If it succeeds, it sets the svrmgmthost,
     # svrmgtpath, svrmgmtport, svrmgmtscheme, authtoken, and authok variables on the connection.  If it fails, it raises
@@ -10,7 +10,7 @@ module CloudLB
     def initialize(connection)
       request = Typhoeus::Request.new(connection.auth_url,
         :method                        => :get,
-        :headers                       => { "X-Auth-User" => connection.authuser, "X-Auth-Key" => connection.authkey, "User-Agent" => "Cloud Load Balancers Ruby API #{VERSION}" },
+        :headers                       => { "X-Auth-User" => connection.authuser, "X-Auth-Key" => connection.authkey, :"User-Agent" => "Cloud Load Balancers Ruby API #{VERSION}" },
         :verbose                       => ENV['LOADBALANCERS_VERBOSE'] ? true : false)
       CloudLB.hydra.queue(request)
       CloudLB.hydra.run
