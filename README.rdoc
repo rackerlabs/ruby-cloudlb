@@ -1,5 +1,9 @@
 = Rackspace Cloud Load Balancers
 
+== Deprecation Notice
+
+This project is deprecated. New projects should use fog[https://github.com/fog/fog] instead.
+
 == Description
 
 This is a Ruby interface into the Rackspace[http://rackspace.com/] {Cloud Load Balancers}[http://www.rackspace.com/cloud/blog/2011/02/24/rackspace-cloud-load-balancers-beta-now-available-for-all-cloud-customers/] service. Mission-critical web-based applications and workloads require high availability. Load balancing 
@@ -62,5 +66,3 @@ See the class definitions for documentation on specific methods and operations.
 
 See COPYING for license information.
 Copyright (c) 2011, Rackspace US, Inc.
-  
-  

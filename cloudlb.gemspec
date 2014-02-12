@@ -13,6 +13,13 @@ Gem::Specification.new do |s|
   s.homepage    = "http://github.com/rackspace/ruby-cloudlb"
   s.summary     = "Ruby API into the Rackspace Cloud Load Balancers product"
   s.description = "A Ruby API to manage the Rackspace Cloud Load Balancers product"
+  s.post_install_message = %Q{
+**** PLEASE NOTE **********************************************************************************************
+
+  #{s.name} has been deprecated. Please consider using fog (http://github.com/fog/fog) for all new projects.
+
+***************************************************************************************************************
+} if s.respond_to? :post_install_message
  
   s.required_rubygems_version = ">= 1.3.6"
  
